@@ -30,7 +30,9 @@ public class TrainerStorage {
         trainers = new HashMap<>();
         logger.info("Initializing TrainerStorage from file: {}", initDataPath);
 
-        try {   // Assume format: id,firstName,lastName,password,username,spec
+        // ASSUME FORMAT IS : id,firstName,lastName,password,username,spec
+
+        try {
             List<String> lines = Files.readAllLines(Paths.get(initDataPath));
             for (String line : lines) {
                 String[] parts = line.split(",");

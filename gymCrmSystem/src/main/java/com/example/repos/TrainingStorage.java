@@ -35,7 +35,9 @@ public class TrainingStorage {
         trainings = new HashMap<>();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
-        try {   // Assume format: id,trainerId,traineeId,trainingName,trainingType,startDate,trainingDuration
+        // ASSUME FORMAT IS : id,trainerId,traineeId,trainingName,trainingType,startDate,trainingDuration
+
+        try {
             List<String> lines = Files.readAllLines(Paths.get(initDataPath));
             for (String line : lines) {
                 String[] parts = line.split(",");

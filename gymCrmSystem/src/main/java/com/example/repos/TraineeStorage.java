@@ -35,6 +35,8 @@ public class TraineeStorage {
         trainees = new HashMap<>();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
+        // ASSUME FORMAT IS : id,birthDate,address,firstname,lastname,username,password
+
         try {
             logger.info("Loading trainee data from file: {}", initDataPath);
             List<String> lines = Files.readAllLines(Paths.get(initDataPath));
