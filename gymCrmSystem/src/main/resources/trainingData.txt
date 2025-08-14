@@ -1,0 +1,5 @@
+1,101,201,Cardio Blast,Cardio,2025-08-01,60
+2,102,202,Strength Training,Strength,2025-08-02,45
+3,103,203,Yoga Flow,Yoga,2025-08-03,50
+4,104,204,HIIT Session,Cardio,2025-08-04,30
+5,105,205,Pilates Core,Pilates,2025-08-05,55
