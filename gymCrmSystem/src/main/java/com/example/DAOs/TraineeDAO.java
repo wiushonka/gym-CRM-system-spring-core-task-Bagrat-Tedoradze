@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TraineeDAO {
@@ -20,58 +21,53 @@ public class TraineeDAO {
     public TraineeDAO() {}
 
     @Autowired
-    public void setStorage(TraineeStorage storage) {
+    public void setTraineeStorage(TraineeStorage storage) {
         this.storage = storage;
         logger.debug("TraineeStorage injected into TraineeDAO");
     }
 
     public void addTrainee(@NotNull Trainee trainee) {
-        Long id = storage.getTrainees().keySet().stream()
-                .max(Long::compareTo)
-                .orElse(0L) + 1;
-        trainee.setId(id);
-        storage.getTrainees().put(id, trainee);
-        logger.info("Added trainee with ID: {} and username: {}", id, trainee.getUsername());
-    }
-
-    public Trainee getTraineeById(Long id) {
-        Trainee trainee = storage.getTrainees().get(id);
-        if (trainee != null) {
-            logger.debug("Retrieved trainee by ID: {}", id);
-        } else {
-            logger.warn("No trainee found with ID: {}", id);
-        }
-        return trainee;
+        storage.save(trainee);
+        logger.info("Added Trainee: id={}, username={}", trainee.getId(), trainee.getUsername());
     }
 
     public void removeTraineeById(Long id) {
-        if (storage.getTrainees().remove(id) != null) {
-            logger.info("Removed trainee with ID: {}", id);
-        } else {
-            logger.warn("Attempted to remove trainee with ID: {}, but not found", id);
-        }
+        storage.delete(id);
+        logger.debug("Removed Trainee: id={}", id);
     }
 
     public void updateTrainee(Long id, @NotNull Trainee trainee) {
-        trainee.setId(id);
-        storage.getTrainees().put(id, trainee);
-        logger.info("Updated trainee with ID: {} and username: {}", id, trainee.getUsername());
+        storage.update(id,trainee);
+        logger.info("Updated Trainee: id={}, username={}", id, trainee.getUsername());
     }
 
-    public Trainee getTraineeByUsername(String username) {
-        for (Trainee trainee : storage.getTrainees().values()) {
-            if (trainee.getUsername().equals(username)) {
-                logger.debug("Found trainee with username: {}", username);
-                return trainee;
-            }
+    public Optional<Trainee> getTraineeById(Long id) {
+        Optional<Trainee> opTrainee=storage.findById(id);
+        if(opTrainee.isPresent()) {
+            Trainee trainee = opTrainee.get();
+            logger.info("Retrieved Trainee: id={}, username={}", id, trainee.getUsername());
+            return Optional.of(trainee);
+        }else{
+            logger.info("Trainee with that id could not be found");
+            return Optional.empty();
         }
-        logger.warn("No trainee found with username: {}", username);
-        return null;
+    }
+
+    public Optional<Trainee> getTraineeByUsername(String username) {
+        Optional<Trainee> opTrainee=storage.findByUsername(username);
+        if(opTrainee.isPresent()) {
+            Trainee trainee = opTrainee.get();
+            logger.info("Retrieved Trainee: username={}", username);
+            return Optional.of(trainee);
+        }else{
+            logger.info("Trainee with that username could not be found");
+            return Optional.empty();
+        }
     }
 
     public List<Trainee> getAllTrainees() {
-        List<Trainee> all = storage.getTrainees().values().stream().toList();
-        logger.debug("Retrieved all trainees, count: {}", all.size());
-        return all;
+        List<Trainee> trainees = storage.findAll();
+        logger.info("Retrieving all trainees, count={}", trainees.size());
+        return trainees;
     }
 }

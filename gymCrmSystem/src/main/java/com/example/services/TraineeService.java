@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TraineeService {
@@ -25,34 +25,35 @@ public class TraineeService {
         logger.debug("TraineeDAO injected into TraineeService");
     }
 
-    public void createTraineeProfile(String firstName, String lastName, Date birthDate, String addr) {
+    public void createTraineeProfile(@NotNull Trainee trainee) {
+        String firstName=trainee.getFirstName().toLowerCase();
+        String lastName=trainee.getLastName().toLowerCase();
         String password = UserUtili.generatePassword();
-        String username = "" ;// = UserUtili.generateUsername(firstName, lastName, null);
-//        int x = 1;
-//        while (dao.getTraineeByUsername(username) != null) {
-//            username = UserUtili.generateUsername(firstName, lastName, x);
-//            ++x;
-//        }
+        String username = UserUtili.generateUsername(firstName,lastName,
+                                            genName->dao.getTraineeByUsername(genName).isPresent());
+        trainee.setUsername(username);
+        trainee.setPassword(password);
+        trainee.setFirstName(firstName);
+        trainee.setLastName(lastName);
 
-        Trainee trainee = new Trainee(null, birthDate, addr, firstName, lastName, username, password);
         dao.addTrainee(trainee);
         logger.info("Created trainee profile: username={}, firstName={}, lastName={}", username, firstName, lastName);
     }
 
     public void deleteTraineeProfile(String username){
-        Trainee trainee = dao.getTraineeByUsername(username);
-        if (trainee == null) {
+        Optional<Trainee> trainee = dao.getTraineeByUsername(username);
+        if (trainee.isEmpty()) {
             logger.warn("Attempted to delete non-existent trainee: username={}", username);
             return;
         }
-        dao.removeTraineeById(trainee.getId());
+        dao.removeTraineeById(trainee.get().getId());
         logger.info("Deleted trainee profile: username={}", username);
     }
 
     public void updateTraineeProfile(@NotNull Trainee trainee){
         Long id = trainee.getId();
-        Trainee old = dao.getTraineeById(id);
-        if (id == null || old == null) {
+        Optional<Trainee> old = dao.getTraineeById(id);
+        if (old.isEmpty()) {
             logger.warn("Attempted to update non-existent trainee: id={}", id);
             return;
         }
@@ -61,8 +62,8 @@ public class TraineeService {
     }
 
     public void updateTraineeProfileById(@NotNull Long id, @NotNull Trainee trainee){
-        Trainee old = dao.getTraineeById(id);
-        if (old == null) {
+        Optional<Trainee> old = dao.getTraineeById(id);
+        if (old.isEmpty()) {
             logger.warn("Attempted to update non-existent trainee by ID: id={}", id);
             return;
         }
@@ -70,14 +71,15 @@ public class TraineeService {
         logger.info("Updated trainee profile by ID: id={}, username={}", id, trainee.getUsername());
     }
 
-    public Trainee getTraineeProfile(String username){
-        Trainee trainee = dao.getTraineeByUsername(username);
-        if (trainee != null) {
+    public Optional<Trainee> getTraineeProfile(String username){
+        Optional<Trainee> traineeOpt = dao.getTraineeByUsername(username);
+        if (traineeOpt.isPresent()) {
             logger.debug("Retrieved trainee profile: username={}", username);
+            return traineeOpt;
         } else {
             logger.warn("No trainee found with username={}", username);
+            return Optional.empty();
         }
-        return trainee;
     }
 
     public List<Trainee> getAllTrainees() {

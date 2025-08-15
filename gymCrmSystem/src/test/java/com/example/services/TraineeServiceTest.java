@@ -2,11 +2,14 @@ package com.example.services;
 
 import com.example.DAOs.TraineeDAO;
 import com.example.entitys.users.Trainee;
+import com.example.repos.TraineeStorage;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,75 +20,98 @@ class TraineeServiceTest {
     @BeforeEach
     void setUp() {
         TraineeDAO dao = new TraineeDAO();
+
+        TraineeStorage storage = new TraineeStorage() {
+            @Override
+            @PostConstruct
+            public void init() {
+                setTrainees(new java.util.HashMap<>());
+            }
+        };
+        storage.init();
+        dao.setTraineeStorage(storage);
+
         service = new TraineeService();
         service.setTraineeDao(dao);
-
-        dao.setStorage(new com.example.repos.TraineeStorage() {
-            @Override
-            public java.util.Map<Long, Trainee> getTrainees() {
-                if (super.getTrainees() == null) super.setTrainees(new java.util.HashMap<>());
-                return super.getTrainees();
-            }
-        });
     }
 
     @Test
     void testCreateTraineeProfile() {
-        service.createTraineeProfile("John", "Doe", new Date(), "123 Street");
-        Trainee t = service.getTraineeProfile("John.Doe");
-        assertNotNull(t);
-        assertEquals("John", t.getFirstName());
-        assertEquals("Doe", t.getLastName());
+        Trainee trainee = new Trainee(new Date(), "123 Street", "John",
+                            "Doe", "", "");
+        service.createTraineeProfile(trainee);
+
+        Optional<Trainee> tOpt = service.getTraineeProfile(trainee.getUsername());
+        assertTrue(tOpt.isPresent());
+        Trainee t = tOpt.get();
+        assertEquals("john", t.getFirstName());
+        assertEquals("doe", t.getLastName());
         assertEquals("123 Street", t.getAddr());
         assertNotNull(t.getPassword());
+        assertNotNull(t.getUsername());
     }
 
     @Test
     void testCreateTraineeProfileWithDuplicateUsername() {
-        service.createTraineeProfile("Jane", "Smith", new Date(), "456 Avenue");
-        service.createTraineeProfile("Jane", "Smith", new Date(), "789 Avenue");
+        Trainee t1 = new Trainee(new Date(), "456 Avenue", "Jane",
+                        "Smith", "", "");
+        Trainee t2 = new Trainee(new Date(), "789 Avenue", "Jane",
+                        "Smith", "", "");
+
+        service.createTraineeProfile(t1);
+        service.createTraineeProfile(t2);
 
         List<Trainee> trainees = service.getAllTrainees();
         assertEquals(2, trainees.size());
-        assertEquals("Jane.Smith", trainees.get(0).getUsername());
-        assertEquals("Jane.Smith1", trainees.get(1).getUsername());
+        assertEquals("jane.smith", trainees.get(0).getUsername());
+        assertEquals("jane.smith1", trainees.get(1).getUsername());
     }
 
     @Test
     void testDeleteTraineeProfile() {
-        service.createTraineeProfile("Alice", "Brown", new Date(), "Addr1");
-        assertNotNull(service.getTraineeProfile("Alice.Brown"));
+        Trainee t = new Trainee(new Date(), "Addr1", "Alice",
+                                "Brown", "", "");
+        service.createTraineeProfile(t);
+        assertTrue(service.getTraineeProfile(t.getUsername()).isPresent());
 
-        service.deleteTraineeProfile("Alice.Brown");
-        assertNull(service.getTraineeProfile("Alice.Brown"));
+        service.deleteTraineeProfile(t.getUsername());
+        assertTrue(service.getTraineeProfile(t.getUsername()).isEmpty());
     }
 
     @Test
     void testUpdateTraineeProfile() {
-        service.createTraineeProfile("Bob", "Green", new Date(), "Addr2");
-        Trainee t = service.getTraineeProfile("Bob.Green");
+        Trainee t = new Trainee(new Date(), "Addr2", "Bob",
+                        "Green", "", "");
+        service.createTraineeProfile(t);
+
         t.setAddr("NewAddr");
         service.updateTraineeProfile(t);
 
-        Trainee updated = service.getTraineeProfile("Bob.Green");
+        Trainee updated = service.getTraineeProfile(t.getUsername()).orElseThrow();
         assertEquals("NewAddr", updated.getAddr());
     }
 
     @Test
     void testUpdateTraineeProfileById() {
-        service.createTraineeProfile("Charlie", "White", new Date(), "Addr3");
-        Trainee t = service.getTraineeProfile("Charlie.White");
+        Trainee t = new Trainee(new Date(), "Addr3", "Charlie",
+                        "White", "", "");
+        service.createTraineeProfile(t);
+
         t.setAddr("UpdatedAddr");
         service.updateTraineeProfileById(t.getId(), t);
 
-        Trainee updated = service.getTraineeProfile("Charlie.White");
+        Trainee updated = service.getTraineeProfile(t.getUsername()).orElseThrow();
         assertEquals("UpdatedAddr", updated.getAddr());
     }
 
     @Test
     void testGetAllTrainees() {
-        service.createTraineeProfile("Tom", "Blue", new Date(), "Addr4");
-        service.createTraineeProfile("Jerry", "Yellow", new Date(), "Addr5");
+        Trainee t1 = new Trainee(new Date(), "Addr4", "Tom",
+                        "Blue", "", "");
+        Trainee t2 = new Trainee(new Date(), "Addr5", "Jerry",
+                        "Yellow", "", "");
+        service.createTraineeProfile(t1);
+        service.createTraineeProfile(t2);
 
         List<Trainee> trainees = service.getAllTrainees();
         assertEquals(2, trainees.size());

@@ -7,9 +7,9 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TraineeEntityTest {
+
     @Test
     void testTraineeConstructorAndGetters() {
-        Long id = 1L;
         Date birthDate = new Date(631152000000L); // 1990-01-01
         String addr = "123 Main St";
         String firstName = "Alice";
@@ -17,9 +17,10 @@ class TraineeEntityTest {
         String username = "Alice.Johnson";
         String password = "password123";
 
-        Trainee trainee = new Trainee(id, birthDate, addr, firstName, lastName, username, password);
+        Trainee trainee = new Trainee(birthDate, addr, firstName, lastName, username, password);
+        trainee.setId(1L);
 
-        assertEquals(id, trainee.getId());
+        assertEquals(1L, trainee.getId());
         assertEquals(addr, trainee.getAddr());
         assertEquals(firstName, trainee.getFirstName());
         assertEquals(lastName, trainee.getLastName());
@@ -32,7 +33,8 @@ class TraineeEntityTest {
     @Test
     void testTraineeSetters() {
         Date birthDate = new Date(631152000000L); // 1990-01-01
-        Trainee trainee = new Trainee(1L, birthDate, "123 Main St", "Alice", "Johnson", "Alice.Johnson", "pass");
+        Trainee trainee = new Trainee(birthDate, "123 Main St", "Alice", "Johnson", "Alice.Johnson", "pass");
+        trainee.setId(1L);
 
         trainee.setId(2L);
         trainee.setAddr("456 Oak Ave");
@@ -54,14 +56,13 @@ class TraineeEntityTest {
     @Test
     void testBirthDateImmutability() {
         Date birthDate = new Date(631152000000L); // 1990-01-01
-        Trainee trainee = new Trainee(1L, birthDate, "123 Main St", "Alice", "Johnson", "Alice.Johnson", "pass");
+        Trainee trainee = new Trainee(birthDate, "123 Main St", "Alice", "Johnson", "Alice.Johnson", "pass");
 
         birthDate.setTime(0L);
         assertNotEquals(0L, trainee.getBirthDate().getTime());
 
         Date returnedDate = trainee.getBirthDate();
         returnedDate.setTime(0L);
-
         assertNotEquals(0L, trainee.getBirthDate().getTime());
     }
 }

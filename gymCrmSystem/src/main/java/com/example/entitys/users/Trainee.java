@@ -6,14 +6,17 @@ import java.util.Date;
 
 public class Trainee extends User {
 
-    private Long id;
     private String addr;
     private final Date birthDate;
+    private Long id;
 
-    public Trainee(Long id, @NotNull Date birthDate, String addr,
+    public Trainee(Date birthDate, String firstname, String lastname, String username, String password) {
+        this(birthDate,"",firstname,lastname,username,password);
+    }
+
+    public Trainee(@NotNull Date birthDate, String addr,
                    String firstName, String lastName, String username, String password) {
         super(firstName, lastName, username, password);
-        this.id = id;
         this.birthDate = new Date(birthDate.getTime());
         this.addr = addr;
     }
