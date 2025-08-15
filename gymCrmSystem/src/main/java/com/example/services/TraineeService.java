@@ -2,7 +2,7 @@ package com.example.services;
 
 import com.example.DAOs.TraineeDAO;
 import com.example.entitys.users.Trainee;
-import com.example.utili.UserUtili;
+import com.example.utili.Utili;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +28,8 @@ public class TraineeService {
     public void createTraineeProfile(@NotNull Trainee trainee) {
         String firstName=trainee.getFirstName().toLowerCase();
         String lastName=trainee.getLastName().toLowerCase();
-        String password = UserUtili.generatePassword();
-        String username = UserUtili.generateUsername(firstName,lastName,
+        String password = Utili.generatePassword();
+        String username = Utili.generateUsername(firstName,lastName,
                                             genName->dao.getTraineeByUsername(genName).isPresent());
         trainee.setUsername(username);
         trainee.setPassword(password);

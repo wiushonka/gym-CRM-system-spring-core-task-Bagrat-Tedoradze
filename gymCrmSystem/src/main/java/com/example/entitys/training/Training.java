@@ -14,9 +14,8 @@ public class Training {
     private Date startDate;
     private Long trainingDuration;
 
-    public Training(Long id,Long trainerId, Long traineeId, String trainingName,
+    public Training(Long trainerId, Long traineeId, String trainingName,
                     String trainingType, @NotNull Date startDate, Long trainingDuration) {
-        this.id = id;
         this.trainerId=trainerId;
         this.traineeId=traineeId;
         this.trainingName=trainingName;

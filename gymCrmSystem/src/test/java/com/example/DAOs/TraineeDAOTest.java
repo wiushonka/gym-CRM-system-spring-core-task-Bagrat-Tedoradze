@@ -16,7 +16,7 @@ class TraineeDAOTest {
 
     private TraineeDAO dao;
     private TraineeStorage storage;
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @BeforeEach
     void setUp() throws Exception {

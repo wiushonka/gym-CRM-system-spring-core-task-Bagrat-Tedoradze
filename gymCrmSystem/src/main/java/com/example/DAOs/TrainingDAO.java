@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TrainingDAO {
@@ -27,61 +28,38 @@ public class TrainingDAO {
     }
 
     public void createTraining(@NotNull Training training) {
-        Long id = storage.getTrainings().keySet().stream()
-                .max(Long::compareTo)
-                .orElse(0L) + 1;
-        training.setId(id);
-        storage.getTrainings().put(id, training);
-        logger.info("Created training with ID: {}, Name: {}, Type: {}",
-                id, training.getTrainingName(), training.getTrainingType());
+        storage.save(training);
+        logger.debug("Training created: id={}", training.getId());
     }
 
-    public Training getTrainingById(Long id) {
-        Training training = storage.getTrainings().get(id);
-        if (training != null) {
+    public Optional<Training> getTrainingById(Long id) {
+        Optional<Training> optTraining=storage.findById(id);
+        if(optTraining.isPresent()) {
             logger.debug("Retrieved training by ID: {}", id);
-        } else {
-            logger.warn("No training found with ID: {}", id);
+            return optTraining;
+        }else{
+            logger.debug("Training not found");
+            return Optional.empty();
         }
-        return training;
     }
 
     public List<Training> getTrainingsByType(String type) {
-        if (type == null) {
-            logger.error("getTrainingsByType called with null type");
-            throw new NullPointerException("type is null");
-        }
-        List<Training> trainings = storage.getTrainings().values().stream()
-                .filter(training -> training.getTrainingType().equals(type))
-                .toList();
-        logger.debug("Retrieved {} trainings of type: {}", trainings.size(), type);
-        return trainings;
+        logger.debug("searching for trainings by type: {}", type);
+        return storage.findByType(type);
     }
 
-    public Training getTrainingByName(String name) {
-        Training training = storage.getTrainings().values().stream()
-                .filter(t -> t.getTrainingName().equals(name))
-                .findFirst()
-                .orElse(null);
-        if (training != null) {
-            logger.debug("Found training with name: {}", name);
-        } else {
-            logger.warn("No training found with name: {}", name);
-        }
-        return training;
+    public Optional<Training> getTrainingByName(String name) {
+        logger.debug("searching training by name: {}", name);
+        return storage.getTrainingByName(name);
     }
 
     public List<Training> getTrainingsAfterDate(Date date) {
-        List<Training> trainings = storage.getTrainings().values().stream()
-                .filter(training -> training.getStartDate().after(date))
-                .toList();
-        logger.debug("Retrieved {} trainings after date: {}", trainings.size(), date);
-        return trainings;
+        logger.debug("searching training after date: {}", date);
+        return storage.findTrainingsAfterCutoff(date);
     }
 
     public List<Training> getAllTrainings() {
-        List<Training> all = storage.getTrainings().values().stream().toList();
-        logger.debug("Retrieved all trainings, count: {}", all.size());
-        return all;
+        logger.debug("getting all trainings");
+        return storage.findAll();
     }
 }

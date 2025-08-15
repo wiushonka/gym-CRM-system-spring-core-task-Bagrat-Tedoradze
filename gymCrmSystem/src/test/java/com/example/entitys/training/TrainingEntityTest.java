@@ -17,7 +17,8 @@ class TrainingEntityTest {
         Date startDate = new Date(1672531200000L); // 2023-01-01
         Long duration = 60L;
 
-        Training training = new Training(id, trainerId, traineeId, trainingName, trainingType, startDate, duration);
+        Training training = new Training(trainerId, traineeId, trainingName, trainingType, startDate, duration);
+        training.setId(id);
 
         assertEquals(id, training.getId());
         assertEquals(trainerId, training.getTrainerId());
@@ -30,7 +31,7 @@ class TrainingEntityTest {
 
     @Test
     void testTrainingSetters() {
-        Training training = new Training(1L, 10L, 20L, "Yoga Basics", "Yoga", new Date(), 60L);
+        Training training = new Training(10L, 20L, "Yoga Basics", "Yoga", new Date(), 60L);
 
         training.setId(2L);
         training.setTrainerId(11L);
@@ -53,7 +54,7 @@ class TrainingEntityTest {
     @Test
     void testStartDateImmutability() {
         Date startDate = new Date(1672531200000L); // 2023-01-01
-        Training training = new Training(1L, 10L, 20L, "Yoga Basics", "Yoga", startDate, 60L);
+        Training training = new Training(10L, 20L, "Yoga Basics", "Yoga", startDate, 60L);
 
         startDate.setTime(0L);
         assertNotEquals(0L, training.getStartDate().getTime());

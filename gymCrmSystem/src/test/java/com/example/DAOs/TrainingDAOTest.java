@@ -5,10 +5,12 @@ import com.example.repos.TrainingStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,17 +18,18 @@ class TrainingDAOTest {
 
     private TrainingDAO dao;
     private TrainingStorage storage;
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         storage = new TrainingStorage();
         dao = new TrainingDAO();
         dao.setTrainingStorage(storage);
 
-        Training t1 = new Training(1L, 1L, 1L, "Morning Workout",
-                        "Fitness", new Date(2025-1900, 7, 1), 60L);
-        Training t2 = new Training(2L, 2L, 2L, "Yoga Session",
-                        "Yoga", new Date(2025-1900, 7, 5), 45L);
+        Training t1 = new Training(1L, 1L, "Morning Workout",
+                        "Fitness", sdf.parse("2025-08-01"), 60L);
+        Training t2 = new Training(2L, 2L, "Yoga Session", "Yoga",
+                                    sdf.parse("2025-08-05"), 45L);
         storage.setTrainings(new HashMap<>(Map.of(
                 1L, t1,
                 2L, t2
@@ -34,9 +37,9 @@ class TrainingDAOTest {
     }
 
     @Test
-    void testCreateTraining() {
-        Training t = new Training(null, 3L, 3L, "Evening Run",
-                        "Cardio", new Date(2025-1900, 7, 10), 30L);
+    void testCreateTraining() throws Exception {
+        Training t = new Training(3L, 3L, "Evening Run",
+                        "Cardio", sdf.parse("2025-08-10"), 30L);
         dao.createTraining(t);
 
         assertNotNull(t.getId());
@@ -45,35 +48,43 @@ class TrainingDAOTest {
 
     @Test
     void testGetTrainingById() {
-        Training t = dao.getTrainingById(1L);
-        assertNotNull(t);
-        assertEquals("Morning Workout", t.getTrainingName());
+        Optional<Training> opt = dao.getTrainingById(1L);
+        assertTrue(opt.isPresent());
+        assertEquals("Morning Workout", opt.get().getTrainingName());
+
+        assertTrue(dao.getTrainingById(99L).isEmpty());
     }
 
     @Test
     void testGetTrainingByName() {
-        Training t = dao.getTrainingByName("Yoga Session");
-        assertNotNull(t);
-        assertEquals(2L, t.getId());
+        Optional<Training> opt = dao.getTrainingByName("Yoga Session");
+        assertTrue(opt.isPresent());
+        assertNull(opt.get().getId());
 
-        assertNull(dao.getTrainingByName("Nonexistent"));
+        assertTrue(dao.getTrainingByName("Nonexistent").isEmpty());
     }
 
     @Test
     void testGetTrainingsByType() {
         List<Training> fitnessTrainings = dao.getTrainingsByType("Fitness");
         assertEquals(1, fitnessTrainings.size());
-        assertEquals("Morning Workout", fitnessTrainings.get(0).getTrainingName());
+        assertEquals("Morning Workout", fitnessTrainings.getFirst().getTrainingName());
 
-        assertThrows(NullPointerException.class, () -> dao.getTrainingsByType(null));
+        List<Training> yogaTrainings = dao.getTrainingsByType("Yoga");
+        assertEquals(1, yogaTrainings.size());
+        assertEquals("Yoga Session", yogaTrainings.getFirst().getTrainingName());
+
+        List<Training> nullList = dao.getTrainingsByType(null);
+        assertNotNull(nullList);
+        assertTrue(nullList.isEmpty());
     }
 
     @Test
-    void testGetTrainingsAfterDate() {
-        Date date = new Date(2025-1900, 7, 2);
-        List<Training> result = dao.getTrainingsAfterDate(date);
+    void testGetTrainingsAfterDate() throws Exception {
+        Date cutoff = sdf.parse("2025-08-02");
+        List<Training> result = dao.getTrainingsAfterDate(cutoff);
         assertEquals(1, result.size());
-        assertEquals("Yoga Session", result.get(0).getTrainingName());
+        assertEquals("Yoga Session", result.getFirst().getTrainingName());
     }
 
     @Test
