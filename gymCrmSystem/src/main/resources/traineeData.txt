@@ -1,5 +1,5 @@
-201,1995-05-12,123 Main St,John,Doe,johndoe,pass123
-202,1992-08-23,456 Elm St,Jane,Smith,janesmith,pass456
-203,1990-11-15,789 Oak St,Mike,Johnson,mikejohnson,pass789
-204,1988-02-05,321 Pine St,Sarah,Williams,sarahw,pass321
-205,1993-07-30,654 Maple St,David,Brown,davidb,pass654
+1995-05-12,123 Main St,John,Doe,johndoe,pass123
+1992-08-23,456 Elm St,Jane,Smith,janesmith,pass456
+1990-11-15,789 Oak St,Mike,Johnson,mikejohnson,pass789
+1988-02-05,321 Pine St,Sarah,Williams,sarahw,pass321
+1993-07-30,654 Maple St,David,Brown,davidb,pass654
