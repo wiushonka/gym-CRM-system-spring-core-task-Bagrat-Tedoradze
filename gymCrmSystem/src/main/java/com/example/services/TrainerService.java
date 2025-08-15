@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TrainerService {
@@ -24,34 +25,39 @@ public class TrainerService {
         logger.debug("TrainerDAO injected into TrainerService");
     }
 
-    public void createTrainerProfile(String firstName, String lastName){
+    public void createTrainerProfile(@NotNull Trainer trainer) {
+        String firstName = trainer.getFirstName();
+        String lastName = trainer.getLastName();
+        firstName=firstName.toLowerCase();
+        lastName=lastName.toLowerCase();
         String password = UserUtili.generatePassword();
-        String username = UserUtili.generateUsername(firstName, lastName, null);
-        int x = 1;
-        while (dao.getTrainerByUsername(username) != null){
-            username = UserUtili.generateUsername(firstName, lastName, x);
-            ++x;
-        }
+        String username = UserUtili.generateUsername(firstName, lastName,
+                                    genName->dao.getTrainerByUsername(genName).isPresent());
 
-        Trainer trainer = new Trainer(null, firstName, lastName, password, username, "");
+        trainer.setFirstName(firstName);
+        trainer.setLastName(lastName);
+        trainer.setUsername(username);
+        trainer.setPassword(password);
+
         dao.addTrainer(trainer);
         logger.info("Created trainer profile: username={}, firstName={}, lastName={}", username, firstName, lastName);
     }
 
     public void deleteTrainerProfile(String username){
-        Trainer trainer = dao.getTrainerByUsername(username);
-        if (trainer == null) {
+        Optional<Trainer> opTrainer = dao.getTrainerByUsername(username);
+        if (opTrainer.isEmpty()) {
             logger.warn("Attempted to delete non-existent trainer: username={}", username);
             return;
         }
+        Trainer trainer = opTrainer.get();
         dao.removeTrainerById(trainer.getId());
         logger.info("Deleted trainer profile: username={}", username);
     }
 
     public void updateTrainerProfile(@NotNull Trainer trainer){
         Long id = trainer.getId();
-        Trainer old = dao.getTrainerById(id);
-        if (id == null || old == null) {
+        Optional<Trainer> oldOpt = dao.getTrainerById(id);
+        if (oldOpt.isEmpty()) {
             logger.warn("Attempted to update non-existent trainer: id={}", id);
             return;
         }
@@ -60,8 +66,8 @@ public class TrainerService {
     }
 
     public void updateTrainerProfileById(@NotNull Long id, @NotNull Trainer trainer){
-        Trainer old = dao.getTrainerById(id);
-        if (old == null) {
+        Optional<Trainer> oldOpt = dao.getTrainerById(id);
+        if (oldOpt.isEmpty()) {
             logger.warn("Attempted to update non-existent trainer by ID: id={}", id);
             return;
         }
@@ -69,14 +75,15 @@ public class TrainerService {
         logger.info("Updated trainer profile by ID: id={}, username={}", id, trainer.getUsername());
     }
 
-    public Trainer getTrainerProfile(String username){
-        Trainer trainer = dao.getTrainerByUsername(username);
-        if (trainer != null) {
+    public Optional<Trainer> getTrainerProfile(String username){
+        Optional<Trainer> trainerOpt = dao.getTrainerByUsername(username);
+        if (trainerOpt.isPresent()) {
             logger.debug("Retrieved trainer profile: username={}", username);
+            return trainerOpt;
         } else {
             logger.warn("No trainer found with username={}", username);
+            return Optional.empty();
         }
-        return trainer;
     }
 
     public List<Trainer> getAllTrainers(){

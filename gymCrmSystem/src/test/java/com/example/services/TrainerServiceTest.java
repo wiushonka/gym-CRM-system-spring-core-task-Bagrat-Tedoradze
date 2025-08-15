@@ -2,10 +2,13 @@ package com.example.services;
 
 import com.example.DAOs.TrainerDAO;
 import com.example.entitys.users.Trainer;
+import com.example.repos.TrainerStorage;
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,76 +19,101 @@ class TrainerServiceTest {
     @BeforeEach
     void setUp() {
         TrainerDAO dao = new TrainerDAO();
+
+        TrainerStorage storage = new TrainerStorage() {
+            @Override
+            @PostConstruct
+            public void init() {
+                setTrainers(new java.util.HashMap<>());
+            }
+        };
+        storage.init();
+        dao.setTrainerStorage(storage);
+
         service = new TrainerService();
         service.setTrainerDao(dao);
-
-        dao.setTrainerStorage(new com.example.repos.TrainerStorage() {
-            @Override
-            public java.util.Map<Long, Trainer> getTrainers() {
-                if (super.getTrainers() == null) super.setTrainers(new java.util.HashMap<>());
-                return super.getTrainers();
-            }
-        });
     }
 
     @Test
     void testCreateTrainerProfile() {
-        service.createTrainerProfile("John", "Doe");
-        Trainer t = service.getTrainerProfile("John.Doe");
-        assertNotNull(t);
-        assertEquals("John", t.getFirstName());
-        assertEquals("Doe", t.getLastName());
-        assertNotNull(t.getPassword());
+        Trainer trainer = new Trainer("John", "Doe", null, null, "");
+        service.createTrainerProfile(trainer);
+
+        Optional<Trainer> t = service.getTrainerProfile("john.doe");
+        assertTrue(t.isPresent());
+        assertEquals("john", t.get().getFirstName());
+        assertEquals("doe", t.get().getLastName());
+        assertEquals("john.doe", t.get().getUsername());
+        assertNotNull(t.get().getPassword());
     }
 
     @Test
     void testCreateTrainerProfileWithDuplicateUsername() {
-        service.createTrainerProfile("Jane", "Smith");
-        service.createTrainerProfile("Jane", "Smith");
+        Trainer t1 = new Trainer("Jane", "Smith", null, null, "");
+        Trainer t2 = new Trainer("Jane", "Smith", null, null, "");
+
+        service.createTrainerProfile(t1);
+        service.createTrainerProfile(t2);
 
         List<Trainer> trainers = service.getAllTrainers();
         assertEquals(2, trainers.size());
-        assertEquals("Jane.Smith", trainers.get(0).getUsername());
-        assertEquals("Jane.Smith1", trainers.get(1).getUsername());
+
+        assertEquals("jane.smith", trainers.get(0).getUsername());
+        assertEquals("jane.smith1", trainers.get(1).getUsername());
     }
 
     @Test
     void testDeleteTrainerProfile() {
-        service.createTrainerProfile("Alice", "Brown");
-        assertNotNull(service.getTrainerProfile("Alice.Brown"));
+        Trainer trainer = new Trainer("Alice", "Brown", null, null, "");
+        service.createTrainerProfile(trainer);
 
-        service.deleteTrainerProfile("Alice.Brown");
-        assertNull(service.getTrainerProfile("Alice.Brown"));
+        assertTrue(service.getTrainerProfile("alice.brown").isPresent());
+
+        service.deleteTrainerProfile("alice.brown");
+        assertTrue(service.getTrainerProfile("alice.brown").isEmpty());
     }
 
     @Test
     void testUpdateTrainerProfile() {
-        service.createTrainerProfile("Bob", "Green");
-        Trainer t = service.getTrainerProfile("Bob.Green");
-        t.setSpec("Yoga");
-        service.updateTrainerProfile(t);
+        Trainer trainer = new Trainer("Bob", "Green", null, null, "");
+        service.createTrainerProfile(trainer);
 
-        Trainer updated = service.getTrainerProfile("Bob.Green");
-        assertEquals("Yoga", updated.getSpec());
+        Optional<Trainer> t = service.getTrainerProfile("bob.green");
+        assertTrue(t.isPresent());
+
+        t.get().setSpec("Yoga");
+        service.updateTrainerProfile(t.get());
+
+        Optional<Trainer> updated = service.getTrainerProfile("bob.green");
+        assertTrue(updated.isPresent());
+        assertEquals("Yoga", updated.get().getSpec());
     }
 
     @Test
     void testUpdateTrainerProfileById() {
-        service.createTrainerProfile("Charlie", "White");
-        Trainer t = service.getTrainerProfile("Charlie.White");
-        t.setSpec("Cardio");
-        service.updateTrainerProfileById(t.getId(), t);
+        Trainer trainer = new Trainer("Charlie", "White", null, null, "");
+        service.createTrainerProfile(trainer);
 
-        Trainer updated = service.getTrainerProfile("Charlie.White");
-        assertEquals("Cardio", updated.getSpec());
+        Optional<Trainer> t = service.getTrainerProfile("charlie.white");
+        assertTrue(t.isPresent());
+
+        t.get().setSpec("Cardio");
+        service.updateTrainerProfileById(t.get().getId(), t.get());
+
+        Optional<Trainer> updated = service.getTrainerProfile("charlie.white");
+        assertTrue(updated.isPresent());
+        assertEquals("Cardio", updated.get().getSpec());
     }
 
     @Test
     void testGetAllTrainers() {
-        service.createTrainerProfile("Tom", "Blue");
-        service.createTrainerProfile("Jerry", "Yellow");
+        service.createTrainerProfile(new Trainer("Tom", "Blue", null, null, ""));
+        service.createTrainerProfile(new Trainer("Jerry", "Yellow", null, null, ""));
 
         List<Trainer> trainers = service.getAllTrainers();
         assertEquals(2, trainers.size());
+
+        assertEquals("tom.blue", trainers.get(0).getUsername());
+        assertEquals("jerry.yellow", trainers.get(1).getUsername());
     }
 }

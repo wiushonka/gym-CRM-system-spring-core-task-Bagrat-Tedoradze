@@ -2,6 +2,7 @@ package com.example.utili;
 
 import org.jetbrains.annotations.NotNull;
 import java.security.SecureRandom;
+import java.util.function.Predicate;
 
 public class UserUtili {
 
@@ -10,12 +11,16 @@ public class UserUtili {
 
     private UserUtili(){}
 
-    public static String generateUsername(String firstName, String lastName, Integer serialNum){
+    public static @NotNull String generateUsername(String firstName, String lastName, @NotNull Predicate<String> exists){
         String username = firstName + "." + lastName;
-        if(serialNum != null){
-            username += serialNum;
+        int serialNum=1;
+        String tmp=username;
+        while(exists.test(tmp)) {
+            tmp = username + serialNum;
+            ++serialNum;
         }
-        return username;
+
+        return tmp;
     }
 
     public static @NotNull String generatePassword(){

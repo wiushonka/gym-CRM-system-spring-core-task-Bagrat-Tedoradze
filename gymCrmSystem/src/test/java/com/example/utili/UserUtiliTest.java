@@ -15,16 +15,6 @@ class UserUtiliTest {
     }
 
     @Test
-    void testGenerateUsernameWithSerial() {
-        String firstName = "Jane";
-        String lastName = "Smith";
-        int serialNum = 2;
-        String username = UserUtili.generateUsername(firstName, lastName, serialNum);
-
-        assertEquals("Jane.Smith2", username);
-    }
-
-    @Test
     void testGeneratePasswordLength() {
         String password = UserUtili.generatePassword();
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,16 +23,16 @@ class TrainerDAOTest {
         dao.setTrainerStorage(storage);
 
         storage.setTrainers(new HashMap<>(Map.of(
-                1L, new Trainer(1L, "John", "Doe",
+                1L, new Trainer("John", "Doe",
                         "pass123", "John.Doe", "Fitness"),
-                2L, new Trainer(2L, "Jane", "Smith",
+                2L, new Trainer( "Jane", "Smith",
                         "pass456", "Jane.Smith", "Yoga")
         )));
     }
 
     @Test
     void testAddTrainer() {
-        Trainer t = new Trainer(null, "Alice", "Brown",
+        Trainer t = new Trainer("Alice", "Brown",
                     "pass789", "Alice.Brown", "Cardio");
         dao.addTrainer(t);
 
@@ -41,9 +42,9 @@ class TrainerDAOTest {
 
     @Test
     void testGetTrainerById() {
-        Trainer t = dao.getTrainerById(1L);
-        assertNotNull(t);
-        assertEquals("John", t.getFirstName());
+        Optional<Trainer> t = dao.getTrainerById(1L);
+        assertTrue(t.isPresent());
+        assertEquals("John", t.get().getFirstName());
     }
 
     @Test
@@ -54,7 +55,7 @@ class TrainerDAOTest {
 
     @Test
     void testUpdateTrainer() {
-        Trainer updated = new Trainer(null, "John", "Doe",
+        Trainer updated = new Trainer("John", "Doe",
                     "newpass", "John.Doe", "Strength");
         dao.updateTrainer(1L, updated);
 
@@ -65,11 +66,11 @@ class TrainerDAOTest {
 
     @Test
     void testGetTrainerByUsername() {
-        Trainer t = dao.getTrainerByUsername("Jane.Smith");
-        assertNotNull(t);
-        assertEquals(2L, t.getId());
+        Optional<Trainer> t = dao.getTrainerByUsername("Jane.Smith");
+        assertTrue(t.isPresent());
+        assertNull(t.get().getId()); // it should be null since it is not persisted via Storage.
 
-        assertNull(dao.getTrainerByUsername("Non.Existent"));
+        assertTrue(dao.getTrainerByUsername("Non.Existent").isEmpty());
     }
 
     @Test

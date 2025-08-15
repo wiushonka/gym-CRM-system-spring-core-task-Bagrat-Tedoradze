@@ -14,9 +14,9 @@ class TrainerEntityTest {
         String password = "password123";
         String spec = "Yoga";
 
-        Trainer trainer = new Trainer(id, firstName, lastName, password, username, spec);
+        Trainer trainer = new Trainer(firstName, lastName, password, username, spec);
 
-        assertEquals(id, trainer.getId());
+        assertNull(trainer.getId());
         assertEquals(firstName, trainer.getFirstName());
         assertEquals(lastName, trainer.getLastName());
         assertEquals(username, trainer.getUsername());
@@ -27,7 +27,7 @@ class TrainerEntityTest {
 
     @Test
     void testTrainerSetters() {
-        Trainer trainer = new Trainer(1L, "John", "Doe", "pass", "John.Doe", "Yoga");
+        Trainer trainer = new Trainer("John", "Doe", "pass", "John.Doe", "Yoga");
 
         trainer.setId(2L);
         trainer.setFirstName("Jane");

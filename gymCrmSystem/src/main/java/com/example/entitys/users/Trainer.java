@@ -5,9 +5,12 @@ public class Trainer extends User {
     private Long id;
     private String spec;
 
-    public Trainer(Long id, String firstName, String lastName, String password, String username, String spec) {
+    public Trainer(String firstName, String lastName, String password, String username) {
+        this(firstName, lastName, password, username, "");
+    }
+
+    public Trainer(String firstName, String lastName, String password, String username, String spec) {
         super(firstName, lastName, username, password);
-        this.id=id;
         this.spec=spec;
     }
 

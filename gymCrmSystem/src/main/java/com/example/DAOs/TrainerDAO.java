@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TrainerDAO {
@@ -26,50 +27,47 @@ public class TrainerDAO {
     }
 
     public void addTrainer(@NotNull Trainer trainer) {
-        Long id = storage.getTrainers().keySet().stream().max(Long::compareTo).orElse(0L) + 1;
-        trainer.setId(id);
-        storage.getTrainers().put(id, trainer);
-        logger.info("Added Trainer: id={}, username={}", id, trainer.getUsername());
-    }
-
-    public Trainer getTrainerById(Long id) {
-        Trainer trainer = storage.getTrainers().get(id);
-        if(trainer == null) {
-            logger.warn("No Trainer found with id={}", id);
-        } else {
-            logger.info("Retrieved Trainer: id={}, username={}", id, trainer.getUsername());
-        }
-        return trainer;
+        storage.save(trainer);
+        logger.info("Added Trainer: id={}, username={}", trainer.getId(), trainer.getUsername());
     }
 
     public void removeTrainerById(Long id) {
-        Trainer removed = storage.getTrainers().remove(id);
-        if(removed == null) {
-            logger.warn("Attempted to remove Trainer with id={} but none existed", id);
-        } else {
-            logger.info("Removed Trainer: id={}, username={}", id, removed.getUsername());
-        }
+        storage.delete(id);
+        logger.debug("Removed Trainer: id={}", id);
     }
 
     public void updateTrainer(Long id, @NotNull Trainer trainer) {
-        trainer.setId(id);
-        storage.getTrainers().put(id, trainer);
+        storage.update(id,trainer);
         logger.info("Updated Trainer: id={}, username={}", id, trainer.getUsername());
     }
 
-    public Trainer getTrainerByUsername(String username) {
-        for(Trainer trainer : storage.getTrainers().values()) {
-            if(trainer.getUsername().equals(username)) {
-                logger.info("Found Trainer by username={}", username);
-                return trainer;
-            }
+    public Optional<Trainer> getTrainerById(Long id) {
+        Optional<Trainer> opTrainer=storage.findById(id);
+        if(opTrainer.isPresent()) {
+            Trainer trainer = opTrainer.get();
+            logger.info("Retrieved Trainer: id={}, username={}", id, trainer.getUsername());
+            return Optional.of(trainer);
+        }else{
+            logger.info("Trainer with that id could not be found");
+            return Optional.empty();
         }
-        logger.warn("No Trainer found with username={}", username);
-        return null;
+    }
+
+    public Optional<Trainer> getTrainerByUsername(String username) {
+        Optional<Trainer> opTrainer=storage.findByUsername(username);
+        if(opTrainer.isPresent()) {
+            Trainer trainer = opTrainer.get();
+            logger.info("Retrieved Trainer: username={}", username);
+            return Optional.of(trainer);
+        }else{
+            logger.info("Trainer with that username could not be found");
+            return Optional.empty();
+        }
     }
 
     public List<Trainer> getAllTrainers() {
-        logger.info("Retrieving all trainers, count={}", storage.getTrainers().size());
-        return storage.getTrainers().values().stream().toList();
+        List<Trainer> trainers = storage.findAll();
+        logger.info("Retrieving all trainers, count={}", trainers.size());
+        return trainers;
     }
 }

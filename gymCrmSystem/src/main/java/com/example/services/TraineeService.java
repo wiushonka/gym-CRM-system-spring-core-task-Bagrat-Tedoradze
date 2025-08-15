@@ -27,12 +27,12 @@ public class TraineeService {
 
     public void createTraineeProfile(String firstName, String lastName, Date birthDate, String addr) {
         String password = UserUtili.generatePassword();
-        String username = UserUtili.generateUsername(firstName, lastName, null);
-        int x = 1;
-        while (dao.getTraineeByUsername(username) != null) {
-            username = UserUtili.generateUsername(firstName, lastName, x);
-            ++x;
-        }
+        String username = "" ;// = UserUtili.generateUsername(firstName, lastName, null);
+//        int x = 1;
+//        while (dao.getTraineeByUsername(username) != null) {
+//            username = UserUtili.generateUsername(firstName, lastName, x);
+//            ++x;
+//        }
 
         Trainee trainee = new Trainee(null, birthDate, addr, firstName, lastName, username, password);
         dao.addTrainee(trainee);
